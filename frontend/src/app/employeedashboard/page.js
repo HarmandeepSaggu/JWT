@@ -1,9 +1,28 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function EmployeeDashboard() {
   const router = useRouter();
-  
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await fetch('http://localhost:8000/user', { 
+        method: 'GET', 
+        credentials: 'include' 
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsername(data.username);
+      } else {
+        router.push('/login');
+      }
+    };
+
+    fetchUser();
+  }, [router]);
+
   const handleLogout = async () => {
     await fetch('http://localhost:8000/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
@@ -15,15 +34,20 @@ export default function EmployeeDashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-800">Employee Dashboard</h1>
-          <button 
-            onClick={handleLogout}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
-          >
-            Sign Out
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="bg-gray-100 px-4 py-2 rounded-lg">
+              <span className="text-gray-600 mr-1">Welcome,</span>
+              <span className="text-xl font-bold text-indigo-700">{username}</span>
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

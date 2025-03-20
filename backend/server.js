@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3002', credentials: true }));
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cookieParser());
 
 const SECRET_KEY = process.env.SECRET_KEY || 'defaultsecret';
@@ -14,7 +14,8 @@ const SECRET_KEY = process.env.SECRET_KEY || 'defaultsecret';
 // Dummy users
 const users = [
   { username: 'admin', password: 'admin123', role: 'admin' },
-  { username: 'employee', password: 'emp123', role: 'employee' }
+  { username: 'Saggu', password: 'emp123', role: 'employee' },
+  { username: 'Hansraj', password: 'hans', role: 'employee' }
 ];
 
 // LOGIN ROUTE
@@ -37,5 +38,16 @@ app.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
+app.get('/user', (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    res.json({ username: decoded.username, role: decoded.role });
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid Token' });
+  }
+});
 
 app.listen(8000, () => console.log('BACKEND RUNNING ON http://localhost:8000'));

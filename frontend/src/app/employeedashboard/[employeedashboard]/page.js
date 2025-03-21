@@ -16,8 +16,6 @@ export default function EmployeeDashboard({params}) {
   };
   
   const fetchComments = async () => {
-    if (data.length === 0 && !isLoading) {
-      setIsLoading(true);
       try {
         // Verify if token is still valid before making API calls
         const verifyRes = await api.get('http://localhost:8000/verify-token');
@@ -29,12 +27,9 @@ export default function EmployeeDashboard({params}) {
           router.push('/login'); // Redirect if token is invalid
         }
       } catch (err) {
-        console.error('Error fetching data', err);
-        router.push('/login'); // Redirect to login if request fails
-      } finally {
-        setIsLoading(false);
+        console.error('Error fetching data', err);  
       }
-    }
+    
   };
   
 

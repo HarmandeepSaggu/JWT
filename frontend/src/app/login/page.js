@@ -24,7 +24,7 @@ export default function LoginPage() {
         if (data.role === 'admin') {
           router.push('/admindashboardd');
         } else if (data.role === 'employee') {
-          router.push('/employeedashboard');
+          router.push(`/employeedashboard/${username}`);
         }
       } else {
         setError(data.message);
@@ -51,6 +51,7 @@ export default function LoginPage() {
         )}
         
         {/* Input Fields */}
+        
         <div className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="username" className="text-sm font-medium text-gray-700">Username</label>

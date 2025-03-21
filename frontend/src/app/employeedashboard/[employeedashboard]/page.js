@@ -1,31 +1,49 @@
 'use client';
-import { useEffect, useState } from 'react';
+import api from '@/utils/api';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-export default function EmployeeDashboard() {
+
+export default function EmployeeDashboard({params}) {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const res = await fetch('http://localhost:8000/user', { 
-        method: 'GET', 
-        credentials: 'include' 
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUsername(data.username);
-      } else {
-        router.push('/login');
-      }
-    };
-
-    fetchUser();
-  }, [router]);
+  const [data, setData] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     await fetch('http://localhost:8000/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
+  };
+  
+  const fetchComments = async () => {
+    if (data.length === 0 && !isLoading) {
+      setIsLoading(true);
+      try {
+        // Verify if token is still valid before making API calls
+        const verifyRes = await api.get('http://localhost:8000/verify-token');
+  
+        if (verifyRes.data.valid) {
+          const res = await api.get('/posts');
+          setData(res.data);
+        } else {
+          router.push('/login'); // Redirect if token is invalid
+        }
+      } catch (err) {
+        console.error('Error fetching data', err);
+        router.push('/login'); // Redirect to login if request fails
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  
+
+  const toggleComments = () => {
+    // If we're about to show comments and have no data, fetch it
+    if (!showComments && data.length === 0) {
+      fetchComments();
+    }
+    setShowComments(!showComments);
   };
 
   return (
@@ -33,21 +51,22 @@ export default function EmployeeDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">Employee Dashboard</h1>
+           <h1 className="text-xl font-bold text-gray-800">Employee Dashboard</h1>
           <div className="flex items-center gap-4">
-            <div className="bg-gray-100 px-4 py-2 rounded-lg">
-              <span className="text-gray-600 mr-1">Welcome,</span>
-              <span className="text-xl font-bold text-indigo-700">{username}</span>
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </header>
+             <div className="bg-gray-100 px-4 py-2 rounded-lg">
+               <span className="text-gray-600 mr-1">Welcome,</span>
+               <span className="text-xl font-bold text-indigo-700">{params.employeedashboard}</span>
+             </div>
+             <button 
+               onClick={handleLogout}
+               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+             >
+               Sign Out
+             </button>
+           </div>
+         </div>
+       </header>
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -71,7 +90,34 @@ export default function EmployeeDashboard() {
                 <p className="text-2xl font-bold text-gray-800">2</p>
               </div>
             </div>
+            {/* Comments Button */}
+            <div className="mt-4">
+              <button 
+                onClick={toggleComments}
+                className="flex items-center justify-center w-full p-2 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all"
+              >
+                {showComments ? 'Hide Comments' : 'Show Comments'}
+              </button>
+            </div>
           </div>
+
+          {/* Comments Section - Only visible when toggled */}
+          {showComments && (
+            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Recent Comments</h2>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-24">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {data.slice(0, 5).map((item) => (
+                    <li key={item.id} className="p-2 bg-gray-50 rounded-lg text-sm text-gray-700">{item.title}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* Schedule Card */}
           <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">

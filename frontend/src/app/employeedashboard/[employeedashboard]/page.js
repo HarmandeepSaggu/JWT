@@ -1,10 +1,11 @@
 'use client';
 import api from '@/utils/api';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 
 export default function EmployeeDashboard({ params }) {
   const router = useRouter();
+  const resolvedParams = use(params); // Unwrapping the promise
   const [data, setData] = useState([]);
   const [todos, setTodos] = useState([]);
   const [showComments, setShowComments] = useState(false);
@@ -50,7 +51,7 @@ export default function EmployeeDashboard({ params }) {
           <div className="flex items-center gap-4">
             <div className="bg-gray-100 px-4 py-2 rounded-lg">
               <span className="text-gray-600 mr-1">Welcome,</span>
-              <span className="text-xl font-bold text-indigo-700">{params.employeedashboard || 'Employee'}</span>
+              <span className="text-xl font-bold text-indigo-700">{resolvedParams.employeedashboard || 'Employee'}</span>
             </div>
             <button
               onClick={handleLogout}

@@ -14,7 +14,7 @@ api.interceptors.request.use(
         .split('; ')
         .find(row => row.startsWith('token='))
         ?.split('=')[1];
-
+        
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
